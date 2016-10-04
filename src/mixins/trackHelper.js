@@ -14,7 +14,7 @@ export var getTrackCSS = function(spec) {
   ]);
 
   var trackWidth, trackHeight;
-  var legacyFunctions = (spec.variableWidth || spec.vertical);
+  var legacyFunctions = (spec.variableWidth || spec.vertical || spec.centerMode);
 
   const trackChildren = (spec.slideCount + 2 * spec.slidesToShow);
 
@@ -22,9 +22,8 @@ export var getTrackCSS = function(spec) {
     if (spec.variableWidth) {
       trackWidth = (spec.slideCount + 2*spec.slidesToShow) * spec.slideWidth;
     } else if (spec.centerMode) {
-      trackWidth = 100 + (((spec.slideCount + 2*(spec.slidesToShow + 1)) - spec.slidesToShow) * (100 / spec.slidesToShow));
+      trackWidth = (spec.slideCount + 2*(spec.slidesToShow + 1)) * spec.slideWidth;
     } else {
-
       if (spec.slidesToShow == 1){
         trackWidth = 100 * (spec.slideCount + 2*spec.slidesToShow);
       } else {

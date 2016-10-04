@@ -9,7 +9,7 @@ var helpers = {
   initialize: function (props) {
     const slickList = ReactDOM.findDOMNode(this.list);
 
-    var legacyFunctions = (props.variableWidth || props.vertical);
+    var legacyFunctions = (props.variableWidth || props.vertical || props.centerMode);
     var slideCount = React.Children.count(props.children);
     var listWidth = legacyFunctions ? this.getWidth(slickList) : 100;
     var trackWidth = legacyFunctions ? this.getWidth(ReactDOM.findDOMNode(this.track)) : 100;
@@ -46,7 +46,7 @@ var helpers = {
     const slickList = ReactDOM.findDOMNode(this.list);
     // This method has mostly same code as initialize method.
     // Refactor it
-    var legacyFunctions = (props.variableWidth || props.vertical);
+    var legacyFunctions = (props.variableWidth || props.vertical || props.centerMode);
     var slideCount = React.Children.count(props.children);
     var listWidth = legacyFunctions ? this.getWidth(slickList) : 100;
     var trackWidth = legacyFunctions ? this.getWidth(ReactDOM.findDOMNode(this.track)) : 100;
@@ -90,8 +90,8 @@ var helpers = {
     var centerPaddingAdj = props.centerMode && (parseInt(props.centerPadding) * 2);
 
     if (!props.vertical) {
-      if (props.variableWidth){
-        slideWidth = this.getWidth(ReactDOM.findDOMNode(this))/props.slidesToShow;
+      if (props.variableWidth || props.centerMode){
+        slideWidth = (this.getWidth(ReactDOM.findDOMNode(this)) - centerPaddingAdj)/props.slidesToShow;
       } else {
         slideWidth = 100/(props.children.length + 2*props.slidesToShow);
       }
