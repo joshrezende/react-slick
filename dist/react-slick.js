@@ -539,7 +539,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    this.slideHandler(targetSlide);
 	  },
-
 	  // Accessiblity handler for previous and next
 	  keyHandler: function keyHandler(e) {
 	    //Dont slide if the cursor is inside the form fields and arrow keys are pressed
@@ -616,6 +615,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var dotCount = Math.ceil(this.state.slideCount / this.props.slidesToScroll);
 	    var swipeDirection = this.swipeDirection(this.state.touchObject);
 	    var touchSwipeLength = touchObject.swipeLength;
+	    var legacyFunctions = this.props.variableWidth || this.props.vertical;
 
 	    if (this.props.infinite === false) {
 	      if (currentSlide === 0 && swipeDirection === 'right' || currentSlide + 1 >= dotCount && swipeDirection === 'left') {
@@ -631,6 +631,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (this.state.swiped === false && this.props.swipeEvent) {
 	      this.props.swipeEvent(swipeDirection);
 	      this.setState({ swiped: true });
+	    }
+
+	    if (!legacyFunctions) {
+	      positionOffset = positionOffset / 20;
 	    }
 
 	    if (!this.props.vertical) {
@@ -842,6 +846,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  checkSpecKeys(spec, ['left', 'variableWidth', 'slideCount', 'slidesToShow', 'slideWidth']);
 
 	  var trackWidth, trackHeight;
+	  var legacyFunctions = spec.variableWidth || spec.vertical || spec.centerMode;
 
 	  var trackChildren = spec.slideCount + 2 * spec.slidesToShow;
 
@@ -851,23 +856,29 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else if (spec.centerMode) {
 	      trackWidth = (spec.slideCount + 2 * (spec.slidesToShow + 1)) * spec.slideWidth;
 	    } else {
-	      trackWidth = (spec.slideCount + 2 * spec.slidesToShow) * spec.slideWidth;
+	      if (spec.slidesToShow == 1) {
+	        trackWidth = 100 * (spec.slideCount + 2 * spec.slidesToShow);
+	      } else {
+	        trackWidth = 100 + (spec.slideCount + 2 * spec.slidesToShow - spec.slidesToShow) * (100 / spec.slidesToShow);
+	      }
 	    }
 	  } else {
 	    trackHeight = trackChildren * spec.slideHeight;
 	  }
 
+	  var sizeUnit = legacyFunctions ? 'px' : '%';
+
 	  var style = {
 	    opacity: 1,
-	    WebkitTransform: !spec.vertical ? 'translate3d(' + spec.left + 'px, 0px, 0px)' : 'translate3d(0px, ' + spec.left + 'px, 0px)',
-	    transform: !spec.vertical ? 'translate3d(' + spec.left + 'px, 0px, 0px)' : 'translate3d(0px, ' + spec.left + 'px, 0px)',
+	    WebkitTransform: !spec.vertical ? 'translate3d(' + spec.left + sizeUnit + ', 0px, 0px)' : 'translate3d(0px, ' + spec.left + sizeUnit + ', 0px)',
+	    transform: !spec.vertical ? 'translate3d(' + spec.left + sizeUnit + ', 0px, 0px)' : 'translate3d(0px, ' + spec.left + sizeUnit + ', 0px)',
 	    transition: '',
 	    WebkitTransition: '',
-	    msTransform: !spec.vertical ? 'translateX(' + spec.left + 'px)' : 'translateY(' + spec.left + 'px)'
+	    msTransform: !spec.vertical ? 'translateX(' + spec.left + sizeUnit + ')' : 'translateY(' + spec.left + sizeUnit + ')'
 	  };
 
 	  if (trackWidth) {
-	    (0, _objectAssign2.default)(style, { width: trackWidth });
+	    (0, _objectAssign2.default)(style, { width: trackWidth + sizeUnit });
 	  }
 
 	  if (trackHeight) {
@@ -877,9 +888,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	  // Fallback for IE8
 	  if (window && !window.addEventListener && window.attachEvent) {
 	    if (!spec.vertical) {
-	      style.marginLeft = spec.left + 'px';
+	      style.marginLeft = spec.left + sizeUnit;
 	    } else {
-	      style.marginTop = spec.left + 'px';
+	      style.marginTop = spec.left + sizeUnit;
 	    }
 	  }
 
@@ -1098,17 +1109,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	  initialize: function initialize(props) {
 	    var slickList = _reactDom2.default.findDOMNode(this.list);
 
+	    var legacyFunctions = props.variableWidth || props.vertical || props.centerMode;
 	    var slideCount = _react2.default.Children.count(props.children);
-	    var listWidth = this.getWidth(slickList);
-	    var trackWidth = this.getWidth(_reactDom2.default.findDOMNode(this.track));
-	    var slideWidth;
-
-	    if (!props.vertical) {
-	      var centerPaddingAdj = props.centerMode && parseInt(props.centerPadding) * 2;
-	      slideWidth = (this.getWidth(_reactDom2.default.findDOMNode(this)) - centerPaddingAdj) / props.slidesToShow;
-	    } else {
-	      slideWidth = this.getWidth(_reactDom2.default.findDOMNode(this));
-	    }
+	    var listWidth = legacyFunctions ? this.getWidth(slickList) : 100;
+	    var trackWidth = legacyFunctions ? this.getWidth(_reactDom2.default.findDOMNode(this.track)) : 100;
+	    var slideWidth = this.getSlideWidth(props);
 
 	    var slideHeight = this.getHeight(slickList.querySelector('[data-index="0"]'));
 	    var listHeight = slideHeight * props.slidesToShow;
@@ -1141,17 +1146,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    var slickList = _reactDom2.default.findDOMNode(this.list);
 	    // This method has mostly same code as initialize method.
 	    // Refactor it
+	    var legacyFunctions = props.variableWidth || props.vertical || props.centerMode;
 	    var slideCount = _react2.default.Children.count(props.children);
-	    var listWidth = this.getWidth(slickList);
-	    var trackWidth = this.getWidth(_reactDom2.default.findDOMNode(this.track));
-	    var slideWidth;
-
-	    if (!props.vertical) {
-	      var centerPaddingAdj = props.centerMode && parseInt(props.centerPadding) * 2;
-	      slideWidth = (this.getWidth(_reactDom2.default.findDOMNode(this)) - centerPaddingAdj) / props.slidesToShow;
-	    } else {
-	      slideWidth = this.getWidth(_reactDom2.default.findDOMNode(this));
-	    }
+	    var listWidth = legacyFunctions ? this.getWidth(slickList) : 100;
+	    var trackWidth = legacyFunctions ? this.getWidth(_reactDom2.default.findDOMNode(this.track)) : 100;
+	    var slideWidth = this.getSlideWidth(props);
 
 	    var slideHeight = this.getHeight(slickList.querySelector('[data-index="0"]'));
 	    var listHeight = slideHeight * props.slidesToShow;
@@ -1180,6 +1179,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	  getWidth: function getWidth(elem) {
 	    return elem.getBoundingClientRect().width || elem.offsetWidth;
+	  },
+	  getWidthInPercent: function getWidth(elem) {
+	    return 100;
+	  },
+	  getSlideWidth: function getSlideWidth(props) {
+	    var slideWidth;
+	    //put center mode on legacy
+	    var centerPaddingAdj = props.centerMode && parseInt(props.centerPadding) * 2;
+
+	    if (!props.vertical) {
+	      if (props.variableWidth || props.centerMode) {
+	        slideWidth = (this.getWidth(_reactDom2.default.findDOMNode(this)) - centerPaddingAdj) / props.slidesToShow;
+	      } else {
+	        slideWidth = 100 / (props.children.length + 2 * props.slidesToShow);
+	      }
+	    } else {
+	      slideWidth = 100;
+	    }
+
+	    return slideWidth;
 	  },
 	  getHeight: function getHeight(elem) {
 	    return elem.getBoundingClientRect().height || elem.offsetHeight;
@@ -1662,12 +1681,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var getSlideStyle = function getSlideStyle(spec) {
 	  var style = {};
+	  var legacyFunctions = spec.variableWidth || spec.centerMode;
+	  var sizeUnit = legacyFunctions ? 'px' : '%';
 
 	  if (spec.variableWidth === undefined || spec.variableWidth === false) {
-	    style.width = spec.slideWidth;
+	    style.width = spec.slideWidth + sizeUnit;
 	  }
 
 	  if (spec.fade) {
+	    // console.info(spec.slideWidth);
 	    style.position = 'relative';
 	    style.left = -spec.index * spec.slideWidth;
 	    style.opacity = spec.currentSlide === spec.index ? 1 : 0;
