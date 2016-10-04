@@ -9,17 +9,11 @@ var helpers = {
   initialize: function (props) {
     const slickList = ReactDOM.findDOMNode(this.list);
 
+    var legacyFunctions = (props.variableWidth || props.vertical);
     var slideCount = React.Children.count(props.children);
-    var listWidth = this.getWidth(slickList);
-    var trackWidth = this.getWidth(ReactDOM.findDOMNode(this.track));
-    var slideWidth;
-
-    if (!props.vertical) {
-      var centerPaddingAdj = props.centerMode && (parseInt(props.centerPadding) * 2);
-      slideWidth = (this.getWidth(ReactDOM.findDOMNode(this)) - centerPaddingAdj)/props.slidesToShow;
-    } else {
-      slideWidth = this.getWidth(ReactDOM.findDOMNode(this));
-    }
+    var listWidth = legacyFunctions ? this.getWidth(slickList) : 100;
+    var trackWidth = legacyFunctions ? this.getWidth(ReactDOM.findDOMNode(this.track)) : 100;
+    var slideWidth = this.getSlideWidth(props);
 
     const slideHeight = this.getHeight(slickList.querySelector('[data-index="0"]'));
     const listHeight = slideHeight * props.slidesToShow;
@@ -52,17 +46,11 @@ var helpers = {
     const slickList = ReactDOM.findDOMNode(this.list);
     // This method has mostly same code as initialize method.
     // Refactor it
+    var legacyFunctions = (props.variableWidth || props.vertical);
     var slideCount = React.Children.count(props.children);
-    var listWidth = this.getWidth(slickList);
-    var trackWidth = this.getWidth(ReactDOM.findDOMNode(this.track));
-    var slideWidth;
-
-    if (!props.vertical) {
-      var centerPaddingAdj = props.centerMode && (parseInt(props.centerPadding) * 2);
-      slideWidth = (this.getWidth(ReactDOM.findDOMNode(this)) - centerPaddingAdj)/props.slidesToShow;
-    } else {
-      slideWidth = this.getWidth(ReactDOM.findDOMNode(this));
-    }
+    var listWidth = legacyFunctions ? this.getWidth(slickList) : 100;
+    var trackWidth = legacyFunctions ? this.getWidth(ReactDOM.findDOMNode(this.track)) : 100;
+    var slideWidth = this.getSlideWidth(props);
 
     const slideHeight = this.getHeight(slickList.querySelector('[data-index="0"]'));
     const listHeight = slideHeight * props.slidesToShow;
@@ -92,6 +80,26 @@ var helpers = {
   },
   getWidth: function getWidth(elem) {
     return elem.getBoundingClientRect().width || elem.offsetWidth;
+  },
+  getWidthInPercent: function getWidth(elem) {
+    return 100;
+  },
+  getSlideWidth: function(props){
+    var slideWidth;
+    //put center mode on legacy
+    var centerPaddingAdj = props.centerMode && (parseInt(props.centerPadding) * 2);
+
+    if (!props.vertical) {
+      if (props.variableWidth){
+        slideWidth = this.getWidth(ReactDOM.findDOMNode(this))/props.slidesToShow;
+      } else {
+        slideWidth = 100/(props.children.length + 2*props.slidesToShow);
+      }
+    } else {
+      slideWidth = 100;
+    }
+
+    return slideWidth;
   },
   getHeight(elem) {
     return elem.getBoundingClientRect().height || elem.offsetHeight;

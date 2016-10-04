@@ -34,12 +34,15 @@ var getSlideClasses = (spec) => {
 
 var getSlideStyle = function (spec) {
   var style = {};
+  var legacyFunctions = spec.variableWidth;
+  var sizeUnit = legacyFunctions ? 'px' : '%';
 
   if (spec.variableWidth === undefined || spec.variableWidth === false) {
-    style.width = spec.slideWidth;
+    style.width = spec.slideWidth + sizeUnit;
   }
 
   if (spec.fade) {
+    // console.info(spec.slideWidth);
     style.position = 'relative';
     style.left = -spec.index * spec.slideWidth;
     style.opacity = (spec.currentSlide === spec.index) ? 1 : 0;
